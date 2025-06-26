@@ -21,7 +21,7 @@ Usage:
 __version__ = "0.1.0"
 __author__ = "teacherbot"
 __email__ = "noreply@github.com"
-__license__ = "MIT" 
+__license__ = "MIT"
 
 # Public API imports will be added as modules are implemented
 __all__ = [
