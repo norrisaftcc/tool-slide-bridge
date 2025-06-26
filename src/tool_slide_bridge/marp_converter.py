@@ -104,7 +104,6 @@ class ClaudeToMarpConverter:
         # Check if custom theme CSS exists
         theme_path = self.theme_dir / f"{config.theme}.css"
         theme_directive = f"theme: {config.theme}" if theme_path.exists() else "theme: default"
-        
         header = f"""---
 marp: true
 {theme_directive}
@@ -116,6 +115,21 @@ color: {config.color}
 ---
 
 """
+=======
+        directives = [
+            "marp: true",
+            theme_directive,
+            f"paginate: {str(config.paginate).lower()}",
+            f"backgroundColor: {config.background_color}",
+            f"color: {config.color}",
+        ]
+        if config.enable_html:
+            directives.append("html: true")
+        if config.pdf_outlines:
+            directives.append("pdf.outlines: true")
+        
+        header = f"---\n" + "\n".join(directives) + "\n---\n\n"
+
         return header + content
     
     def _structure_slides(self, content: str) -> str:
