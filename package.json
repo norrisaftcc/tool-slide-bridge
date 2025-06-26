@@ -1,0 +1,64 @@
+{
+  "name": "tool-slide-bridge",
+  "version": "0.1.0",
+  "description": "Generate PowerPoint compatible slides from AI without friction",
+  "main": "web/src/index.js",
+  "scripts": {
+    "install-marp": "npm install -g @marp-team/marp-cli",
+    "marp": "marp",
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build",
+    "web:install": "cd web && npm install",
+    "test:marp": "marp --version",
+    "clean": "rm -rf presentations/*.pptx presentations/*.pdf presentations/*.html",
+    "setup": "npm run install-marp && pip install -r requirements-dev.txt",
+    "lint:js": "cd web && npm run lint",
+    "format:js": "cd web && npm run format",
+    "test": "npm run test:marp && python -m pytest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norrisaftcc/tool-slide-bridge.git"
+  },
+  "keywords": [
+    "powerpoint",
+    "presentations",
+    "ai",
+    "claude",
+    "marp",
+    "automation",
+    "slides",
+    "markdown"
+  ],
+  "author": "teacherbot",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/norrisaftcc/tool-slide-bridge/issues"
+  },
+  "homepage": "https://github.com/norrisaftcc/tool-slide-bridge#readme",
+  "devDependencies": {
+    "@marp-team/marp-cli": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "directories": {
+    "test": "tests",
+    "doc": "docs"
+  },
+  "files": [
+    "src/",
+    "themes/",
+    "templates/",
+    "web/dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}
