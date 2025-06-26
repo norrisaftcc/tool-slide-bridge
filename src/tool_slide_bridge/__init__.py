@@ -21,12 +21,18 @@ Usage:
 __version__ = "0.1.0"
 __author__ = "teacherbot"
 __email__ = "noreply@github.com"
-__license__ = "MIT"
+__license__ = "MIT" 
 
-# Public API imports will be added as modules are implemented
+# Public API imports
+from .marp_converter import ClaudeToMarpConverter, MarpConfig, ConversionResult
+
 __all__ = [
     "__version__",
     "__author__",
     "__email__", 
     "__license__",
+    "ClaudeToMarpConverter",
+    "MarpConfig",
+    "ConversionResult",
+
 ]
