@@ -1,0 +1,241 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "18"
+
+jobs:
+  # Quality Gates - VIBE Verification
+  lint-and-format:
+    name: Code Quality (Lint & Format)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Install Node.js dependencies
+        run: npm install
+        
+      - name: Lint Python code (flake8)
+        run: flake8 src tests --max-line-length=88 --extend-ignore=E203,W503
+        
+      - name: Check Python formatting (black)
+        run: black --check src tests
+        
+      - name: Check Python import sorting (isort)
+        run: isort --check-only src tests
+        
+      - name: Type checking (mypy)
+        run: mypy src --ignore-missing-imports
+
+  # Python Tests - Multiple Versions
+  python-tests:
+    name: Python Tests (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          # Skip some combinations to reduce CI time
+          - os: windows-latest
+            python-version: "3.9"
+          - os: macos-latest
+            python-version: "3.9"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Create src directory structure
+        run: |
+          mkdir -p src/tool_slide_bridge
+          touch src/tool_slide_bridge/__init__.py
+        shell: bash
+        
+      - name: Run unit tests
+        run: pytest tests/ -v --cov=tool_slide_bridge --cov-report=xml --cov-report=term-missing
+        
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  # MARP CLI Tests
+  marp-tests:
+    name: MARP CLI Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package.json') }}
+          restore-keys: ${{ runner.os }}-node-
+          
+      - name: Install MARP CLI
+        run: npm install -g @marp-team/marp-cli
+        
+      - name: Test MARP installation
+        run: marp --version
+        
+      - name: Create test directories
+        run: |
+          mkdir -p themes presentations tests/fixtures
+          
+      - name: Create basic MARP theme
+        run: |
+          cat > themes/test.css << 'EOF'
+          /* Test theme */
+          @import 'default';
+          section { background: #fff; }
+          EOF
+          
+      - name: Create test markdown
+        run: |
+          cat > tests/fixtures/test.md << 'EOF'
+          ---
+          marp: true
+          theme: default
+          ---
+          # Test Slide
+          This is a test presentation.
+          EOF
+          
+      - name: Test MARP conversion to HTML
+        run: marp tests/fixtures/test.md --html -o presentations/test.html
+        
+      - name: Verify HTML output
+        run: test -f presentations/test.html
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, python-tests, marp-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          npm install -g @marp-team/marp-cli
+          
+      - name: Create basic project structure
+        run: |
+          mkdir -p src/tool_slide_bridge tests themes presentations
+          touch src/tool_slide_bridge/__init__.py
+          
+      - name: Run integration tests
+        run: |
+          # This will be expanded as we implement the actual functionality
+          echo "Integration tests will be implemented as features are added"
+
+  # Security Scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action@v2
+        with:
+          languages: python, javascript
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies for security scan
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit semgrep
+          
+      - name: Check for known security vulnerabilities (Safety)
+        run: safety check --file requirements.txt
+        
+      - name: Static security analysis (Bandit)
+        run: bandit -r src/ -f json -o bandit-report.json || true
+        
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
