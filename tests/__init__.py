@@ -1,1 +1,3 @@
-"""Test package for tool-slide-bridge."""
+
+"""Tests for tool-slide-bridge."""
+
