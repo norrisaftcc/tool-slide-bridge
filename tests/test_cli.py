@@ -34,10 +34,10 @@ class TestFortuneBanner:
     def test_fortune_messages_fit_banner_width(self):
         """Test that all fortune messages fit within the banner width (37 chars)."""
         for message in FORTUNE_MESSAGES:
-            # Even if message is too long, our implementation truncates it
+            # Ensure messages fit within the banner width
             assert (
-                len(message) <= 50
-            ), f"Message too long to handle gracefully: '{message}'"
+                len(message) <= 37
+            ), f"Message too long to fit within the banner: '{message}'"
 
     @patch("tool_slide_bridge.cli.console")
     @patch("random.choice")
