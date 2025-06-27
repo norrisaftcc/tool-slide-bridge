@@ -7,11 +7,12 @@ into PowerPoint presentations using MARP CLI.
 
 import os
 import re
+import shlex
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class MarpConfig(BaseModel):
@@ -60,6 +61,7 @@ class ClaudeToMarpConverter:
         self.theme_dir = Path(theme_dir)
 
         # Create directories if they don't exist
+        self.template_dir.mkdir(parents=True, exist_ok=True)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.theme_dir.mkdir(parents=True, exist_ok=True)
 
@@ -80,6 +82,9 @@ class ClaudeToMarpConverter:
         Returns:
             MARP-compatible markdown content
         """
+        if content is None:
+            raise ValueError("Content cannot be None")
+
         if config is None:
             config = MarpConfig()
 
@@ -203,6 +208,30 @@ class ClaudeToMarpConverter:
 
         return "\n\n---\n\n".join(styled_slides)
 
+    def _sanitize_filename(self, filename: str) -> str:
+        """
+        Sanitize filename to prevent path traversal and invalid characters.
+
+        Args:
+            filename: Raw filename
+
+        Returns:
+            Sanitized filename
+        """
+        # Remove path separators and parent directory references
+        filename = os.path.basename(filename)
+        filename = filename.replace("..", "")
+
+        # Remove invalid characters for filenames
+        invalid_chars = '<>:"|?*\\/\x00'
+        for char in invalid_chars:
+            filename = filename.replace(char, "_")
+
+        # Ensure filename is not empty
+        if not filename or filename.strip() == "":
+            filename = "presentation"
+
+        return filename.strip()
     def generate_presentation(
         self,
         content: str,
@@ -223,6 +252,17 @@ class ClaudeToMarpConverter:
             ConversionResult with status and output path
         """
         try:
+            # Sanitize filename to prevent security issues
+            filename = self._sanitize_filename(filename)
+
+            # Validate output format
+            valid_formats = ["pptx", "pdf", "html"]
+            if output_format not in valid_formats:
+                return ConversionResult(
+                    success=False,
+                    error_message=f"Invalid output format: {output_format}. Must be one of {valid_formats}",
+                )
+
             # Process content
             marp_content = self.process_claude_content(content, filename, config)
 
