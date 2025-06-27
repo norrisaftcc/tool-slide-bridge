@@ -26,10 +26,10 @@ class TestFortuneBanner:
             "AI to PowerPoint without friction",
         ]
 
+        # Check that each required message is contained within the padded messages
         for required_msg in required_messages:
-            assert (
-                required_msg in FORTUNE_MESSAGES
-            ), f"Required message '{required_msg}' not found"
+            found = any(required_msg in padded_msg for padded_msg in FORTUNE_MESSAGES)
+            assert found, f"Required message '{required_msg}' not found in padded messages"
 
     def test_fortune_messages_fit_banner_width(self):
         """Test that all fortune messages fit within the banner width (37 chars)."""

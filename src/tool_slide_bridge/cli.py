@@ -27,17 +27,16 @@ FORTUNE_MESSAGES = [
     "Powered by MARP and imagination",
 ]
 
+# Pad messages to consistent length for better visual alignment
+FORTUNE_MESSAGES = [msg.center(37) for msg in FORTUNE_MESSAGES]
+
 
 def print_banner() -> None:
     """Print the tool banner with a rotating fortune message."""
     fortune = random.choice(FORTUNE_MESSAGES)
 
-    # Ensure the message fits within the banner width (37 chars max)
-    if len(fortune) > 37:
-        fortune = fortune[:34] + "..."
-
-    # Center the fortune message in the banner
-    fortune_line = f"║{fortune:^37}║"
+    # Messages are already padded to 37 chars, just add borders
+    fortune_line = f"║{fortune}║"
 
     banner = f"""
 ╔═══════════════════════════════════════╗
