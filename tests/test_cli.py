@@ -1,11 +1,12 @@
 """Tests for CLI functionality, including fortune messages."""
 
 import random
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import pytest
 from click.testing import CliRunner
 
-from tool_slide_bridge.cli import print_banner, FORTUNE_MESSAGES
+from tool_slide_bridge.cli import FORTUNE_MESSAGES, print_banner
 
 
 class TestFortuneBanner:
