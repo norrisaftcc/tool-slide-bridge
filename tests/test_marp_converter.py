@@ -505,6 +505,30 @@ def test():
                 # Should complete without error
                 assert result.success is True or result.error_message is not None
 
+    def test_filename_sanitization_fallback_to_presentation(self, converter):
+        """Test filename sanitization edge case where all characters are stripped."""
+        dangerous_filenames = [
+            "",  # Empty string
+            "   ",  # Only whitespace
+            "..",  # Only dots
+            ".....",  # Multiple dots
+            "<>:|\"?*",  # Only invalid characters
+            "  .. <> ",  # Mix of whitespace, dots, and invalid chars
+        ]
+
+        for filename in dangerous_filenames:
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = Mock(returncode=0)
+
+                result = converter.generate_presentation("# Test", filename=filename)
+
+                # Should fall back to "presentation" filename
+                assert result.success is True
+                if result.markdown_path:
+                    assert "presentation.md" in result.markdown_path
+                if result.output_path:
+                    assert "presentation." in result.output_path
+
     def test_invalid_output_format(self, converter):
         """Test handling of invalid output format."""
         result = converter.generate_presentation("# Test", output_format="invalid")

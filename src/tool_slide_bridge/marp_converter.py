@@ -129,6 +129,8 @@ class ClaudeToMarpConverter:
         if config.pdf_outlines:
             directives.append("pdf.outlines: true")
 
+        # Filter out any falsy entries before joining
+        directives = [d for d in directives if d]
         header = f"---\n" + "\n".join(directives) + "\n---\n\n"
 
         return header + content
@@ -225,13 +227,16 @@ class ClaudeToMarpConverter:
         # Remove invalid characters for filenames
         invalid_chars = '<>:"|?*\\/\x00'
         for char in invalid_chars:
-            filename = filename.replace(char, "_")
+            filename = filename.replace(char, "")
+
+        # Remove leading/trailing dots and whitespace
+        filename = filename.strip(". ")
 
         # Ensure filename is not empty
-        if not filename or filename.strip() == "":
+        if not filename:
             filename = "presentation"
 
-        return filename.strip()
+        return filename
     def generate_presentation(
         self,
         content: str,
@@ -264,7 +269,7 @@ class ClaudeToMarpConverter:
                 )
 
             # Process content
-            marp_content = self.process_claude_content(content, filename, config)
+            marp_content = self.process_claude_content(content, title=filename, config=config)
 
             # Save markdown file
             md_file = self.output_dir / f"{filename}.md"
