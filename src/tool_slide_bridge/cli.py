@@ -50,7 +50,10 @@ def print_banner() -> None:
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.option(
-    "-o", "--output", default="presentation", help="Output filename (without extension)"
+    "-o",
+    "--output",
+    default="presentation",
+    help="Output filename (without extension)"
 )
 @click.option(
     "-f",
@@ -104,7 +107,9 @@ def main(
 
         for theme_name in themes:
             theme_type = (
-                "Built-in" if theme_name in ["default", "gaia", "uncover"] else "Custom"
+                "Built-in"
+                if theme_name in ["default", "gaia", "uncover"]
+                else "Custom"
             )
             table.add_row(theme_name, theme_type)
 
@@ -143,14 +148,18 @@ def main(
     console.print("\n⚙️  Configuration:", style="bold")
     console.print(f"  Theme: {config.theme}")
     console.print(f"  Format: {format.upper()}")
-    console.print(f"  Pagination: {'Enabled' if config.paginate else 'Disabled'}")
+    pagination_status = "Enabled" if config.paginate else "Disabled"
+    console.print(f"  Pagination: {pagination_status}")
 
     # Convert with progress
     console.print("\n🔄 Converting to PowerPoint...", style="bold cyan")
 
     with console.status("Processing content..."):
         result = converter.generate_presentation(
-            content=content, filename=output, output_format=format, config=config
+            content=content,
+            filename=output,
+            output_format=format,
+            config=config
         )
 
     # Show result
@@ -171,15 +180,19 @@ def main(
         console.print("  3. Use the markdown file for future edits")
 
     else:
-        console.print(f"\n❌ Conversion failed: {result.error_message}", style="red")
+        console.print(
+            f"\n❌ Conversion failed: {result.error_message}", style="red"
+        )
 
         if result.markdown_path:
             console.print(
-                f"\n💡 Intermediate markdown saved to: {result.markdown_path}",
+                f"\n💡 Intermediate markdown saved to: "
+                f"{result.markdown_path}",
                 style="yellow",
             )
             console.print(
-                "   You can manually run MARP on this file to debug the issue.",
+                "   You can manually run MARP on this file to debug "
+                "the issue.",
                 style="dim",
             )
 
