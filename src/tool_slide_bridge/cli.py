@@ -4,13 +4,10 @@ Command-line interface for tool-slide-bridge.
 
 import random
 import sys
-from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import track
 from rich.table import Table
 
 from .marp_converter import ClaudeToMarpConverter, MarpConfig
@@ -31,7 +28,7 @@ FORTUNE_MESSAGES = [
 ]
 
 
-def print_banner():
+def print_banner() -> None:
     """Print the tool banner with a rotating fortune message."""
     fortune = random.choice(FORTUNE_MESSAGES)
 
@@ -79,7 +76,7 @@ def main(
     text_color: str,
     check_marp: bool,
     list_themes: bool,
-):
+) -> None:
     """
     Convert Claude's markdown output to PowerPoint presentations.
 
